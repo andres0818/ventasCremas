@@ -101,8 +101,9 @@ export default function AdminDashboard() {
   ];
 
   const handleMarkAsShipped = async (orderId: string) => {
+    const ORDER_API = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://127.0.0.1:3002';
     try {
-      const response = await fetch(`http://127.0.0.1:3002/api/orders/${orderId}`, {
+      const response = await fetch(`${ORDER_API}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'shipped' })

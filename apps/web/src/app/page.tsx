@@ -15,18 +15,22 @@ export default function LandingPage() {
 
   const handleConfirmPurchase = async (userData: any) => {
     setLoading(true);
+    // Tomamos las URLs de las variables de entorno o usamos localhost por defecto
+    const ORDER_API = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://127.0.0.1:3002';
+    const PAYMENT_API = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || 'http://127.0.0.1:3001';
+
     try {
-      const orderResponse = await fetch('http://localhost:3002/api/orders', {
+      const orderResponse = await fetch(`${ORDER_API}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...userData, total: 85000 }),
       });
       const orderData = await orderResponse.json();
 
-      const paymentResponse = await fetch('http://localhost:3001/api/create-preference', {
+      const paymentResponse = await fetch(`${PAYMENT_API}/api/create-preference`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: orderData._id, ...userData })
+        body: JSON.stringify({ orderId: orderData.id || orderData._id, ...userData })
       });
       const paymentData = await paymentResponse.json();
 

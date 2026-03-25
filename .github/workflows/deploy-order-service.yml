@@ -1,19 +1,42 @@
-name: Deploy Order Service
+name: Deploy Order Service (LIN Cloud)
 
 on:
   push:
     paths:
       - 'apps/services/order-service/**'
-    branches:
-      - main
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+env:
+  PUBLISH_URL: ${{ secrets.LIN_CLOUD_URL_ORDER }}
+  PUBLISH_KEY: ${{ secrets.LIN_CLOUD_KEY_ORDER }}
+  ZIP_NAME: order-service.zip
 
 jobs:
-  deploy:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      # Este paso utiliza el Deploy Hook de Render para el servicio de órdenes
-      - name: Deploy to Render
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip project folder
         run: |
-          curl -X POST ${{ secrets.RENDER_ORDER_DEPLOY_HOOK }}
+          cd apps/services/order-service && zip -r ../../../${{ env.ZIP_NAME }} . -x "node_modules/*" ".env" "test-db.js"
+
+      - name: Verify ZIP existence
+        run: |
+          if [ -f "${{ env.ZIP_NAME }}" ]; then
+            echo "✅ ${{ env.ZIP_NAME }} generado correctamente."
+          else
+            echo "❌ Error: No se pudo generar el archivo ZIP."
+            exit 1
+          fi
+
+      - name: Upload ZIP a LIN Cloud
+        run: |
+          curl -X POST \
+            "${{ env.PUBLISH_URL }}/api/Publish?createRelease=true" \
+            -H "accept: text/plain" \
+            -H "Content-Type: multipart/form-data" \
+            -H "Key: ${{ env.PUBLISH_KEY }}" \
+            -F "file=@${{ env.ZIP_NAME }}"

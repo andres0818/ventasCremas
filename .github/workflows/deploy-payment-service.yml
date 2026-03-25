@@ -1,20 +1,42 @@
-name: Deploy Payment Service
+name: Deploy Payment Service (LIN Cloud)
 
 on:
   push:
     paths:
       - 'apps/services/payment-service/**'
-    branches:
-      - main
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+env:
+  PUBLISH_URL: ${{ secrets.LIN_CLOUD_URL_PAYMENT }}
+  PUBLISH_KEY: ${{ secrets.LIN_CLOUD_KEY_PAYMENT }}
+  ZIP_NAME: payment-service.zip
 
 jobs:
-  deploy:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      # Este paso utiliza un Webhook de Render para disparar el despliegue
-      # Debes crear un "Web Service" en Render y obtener la URL del Deploy Hook
-      - name: Deploy to Render
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip project folder
         run: |
-          curl -X POST ${{ secrets.RENDER_PAYMENT_DEPLOY_HOOK }}
+          cd apps/services/payment-service && zip -r ../../../${{ env.ZIP_NAME }} . -x "node_modules/*" ".env" "test-db.js"
+
+      - name: Verify ZIP existence
+        run: |
+          if [ -f "${{ env.ZIP_NAME }}" ]; then
+            echo "✅ ${{ env.ZIP_NAME }} generado correctamente."
+          else
+            echo "❌ Error: No se pudo generar el archivo ZIP."
+            exit 1
+          fi
+
+      - name: Upload ZIP a LIN Cloud
+        run: |
+          curl -X POST \
+            "${{ env.PUBLISH_URL }}/api/Publish?createRelease=true" \
+            -H "accept: text/plain" \
+            -H "Content-Type: multipart/form-data" \
+            -H "Key: ${{ env.PUBLISH_KEY }}" \
+            -F "file=@${{ env.ZIP_NAME }}"

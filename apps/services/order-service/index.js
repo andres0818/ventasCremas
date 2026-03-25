@@ -11,10 +11,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
-// Configuración de PostgreSQL usando URL de conexión (Secreto de GitHub)
+// Configuración de PostgreSQL usando URL de conexión
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Requerido para la mayoría de DBs en la nube como Render/Supabase
+  // Eliminamos o comentamos el SSL si el servidor no lo soporta
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Inicialización de la Tabla (Se ejecuta al arrancar)
