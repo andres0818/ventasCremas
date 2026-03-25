@@ -28,6 +28,9 @@ jobs:
         run: cd apps/web && npm install
       - name: Build project
         run: cd apps/web && npm run build
+        env:
+          NEXT_PUBLIC_ORDER_SERVICE_URL: ${{ vars.NEXT_PUBLIC_ORDER_SERVICE_URL }}
+          NEXT_PUBLIC_PAYMENT_SERVICE_URL: ${{ vars.NEXT_PUBLIC_PAYMENT_SERVICE_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
