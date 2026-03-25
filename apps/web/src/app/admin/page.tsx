@@ -110,8 +110,12 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         // Actualizar el estado localmente para feedback inmediato
-        setOrders(orders.map((o: any) => o._id === orderId ? { ...o, status: 'shipped' } : o));
-        setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+        setOrders(orders.map((o: Order) => o._id === orderId ? { ...o, status: 'shipped' } : o));
+        
+        if (selectedOrder) {
+          setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+        }
+        
         alert('📦 Orden marcada como enviada con éxito');
       }
     } catch (error) {
