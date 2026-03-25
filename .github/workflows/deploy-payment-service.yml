@@ -1,4 +1,4 @@
-name: Deploy Payment Service (Microservice)
+name: Deploy Payment Service
 
 on:
   push:
@@ -8,14 +8,13 @@ on:
       - main
 
 jobs:
-  deploy-payment:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install dependencies
-        run: cd apps/services/payment-service && npm install
-      # Aquí añadirías el paso de despliegue a Render, Railway o AWS (Docker)
+      
+      # Este paso utiliza un Webhook de Render para disparar el despliegue
+      # Debes crear un "Web Service" en Render y obtener la URL del Deploy Hook
+      - name: Deploy to Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_PAYMENT_DEPLOY_HOOK }}
