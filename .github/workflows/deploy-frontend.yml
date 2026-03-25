@@ -1,0 +1,25 @@
+name: Deploy Frontend (Next.js)
+
+on:
+  push:
+    paths:
+      - 'apps/web/**'
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install dependencies
+        run: cd apps/web && npm install
+      - name: Build project
+        run: cd apps/web && npm run build
+      # Aquí añadirías el paso de despliegue a Vercel, Netlify o AWS

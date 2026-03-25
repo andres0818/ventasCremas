@@ -1,0 +1,21 @@
+name: Deploy Payment Service (Microservice)
+
+on:
+  push:
+    paths:
+      - 'apps/services/payment-service/**'
+    branches:
+      - main
+
+jobs:
+  deploy-payment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd apps/services/payment-service && npm install
+      # Aquí añadirías el paso de despliegue a Render, Railway o AWS (Docker)
