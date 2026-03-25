@@ -4,10 +4,23 @@ import { useState, useEffect } from 'react';
 import { Package, CheckCircle, Clock, XCircle, Search, X, MapPin, Phone, Mail, Hash, Calendar, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface Order {
+  _id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  city: string;
+  address: string;
+  total: number;
+  status: string;
+  externalReference?: string | null;
+  createdAt: string;
+}
+
 export default function AdminDashboard() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrders();
