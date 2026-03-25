@@ -121,8 +121,11 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating order", error);
       // Fallback para Mock Data si no hay conexión real
-      setOrders(orders.map((o: any) => o._id === orderId ? { ...o, status: 'shipped' } : o));
-      setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+      setOrders(orders.map((o: Order) => o._id === orderId ? { ...o, status: 'shipped' } : o));
+      
+      if (selectedOrder) {
+        setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+      }
     }
   };
 
