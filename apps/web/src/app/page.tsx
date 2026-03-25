@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Star, ShieldCheck, Zap, X } from 'lucide-react';
+import { ShoppingCart, Star, ShieldCheck, Zap } from 'lucide-react';
 import { useState } from 'react';
 import CheckoutModal from '@/components/CheckoutModal';
 
@@ -174,7 +174,7 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ Icon, title, description }: any) {
+function FeatureCard({ Icon, title, description }: { Icon: any, title: string, description: string }) {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
@@ -186,7 +186,7 @@ function FeatureCard({ Icon, title, description }: any) {
   );
 }
 
-function TestimonialCard({ name, city, text, delay }: any) {
+function TestimonialCard({ name, city, text, delay }: { name: string, city: string, text: string, delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay, duration: 0.6 }} className="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 group">
       <div className="flex gap-1 mb-6">
@@ -204,7 +204,7 @@ function TestimonialCard({ name, city, text, delay }: any) {
   );
 }
 
-function StepItem({ num, title, description }: any) {
+function StepItem({ num, title, description }: { num: string, title: string, description: string }) {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="text-5xl font-bold text-gray-100 mb-6 font-sans leading-none">{num}</div>
@@ -214,7 +214,7 @@ function StepItem({ num, title, description }: any) {
   );
 }
 
-function FaqItem({ question, answer }: any) {
+function FaqItem({ question, answer }: { question: string, answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="border-b border-gray-100">

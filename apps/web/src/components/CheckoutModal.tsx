@@ -4,15 +4,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Truck, CreditCard, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
+interface FormData {
+  customerName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+}
+
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (userData: any) => void;
+  onConfirm: (userData: FormData) => void;
   isLoading: boolean;
 }
 
 export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }: CheckoutModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     customerName: '',
     email: '',
     phone: '',
@@ -63,7 +71,7 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
                     placeholder="Ej. Juan Pérez" 
                     required 
                     value={formData.customerName}
-                    onChange={(v) => setFormData({...formData, customerName: v})}
+                    onChange={(v: string) => setFormData({...formData, customerName: v})}
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <Input 
@@ -72,7 +80,7 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
                       required 
                       type="tel"
                       value={formData.phone}
-                      onChange={(v) => setFormData({...formData, phone: v})}
+                      onChange={(v: string) => setFormData({...formData, phone: v})}
                     />
                     <Input 
                       label="Correo Electrónico" 
@@ -80,7 +88,7 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
                       required 
                       type="email"
                       value={formData.email}
-                      onChange={(v) => setFormData({...formData, email: v})}
+                      onChange={(v: string) => setFormData({...formData, email: v})}
                     />
                   </div>
                   <Input 
@@ -88,14 +96,14 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
                     placeholder="Bogotá, Medellín..." 
                     required 
                     value={formData.city}
-                    onChange={(v) => setFormData({...formData, city: v})}
+                    onChange={(v: string) => setFormData({...formData, city: v})}
                   />
                   <Input 
                     label="Dirección de Envío" 
                     placeholder="Calle 123 #45-67, Apto 101" 
                     required 
                     value={formData.address}
-                    onChange={(v) => setFormData({...formData, address: v})}
+                    onChange={(v: string) => setFormData({...formData, address: v})}
                   />
                 </div>
 
@@ -112,9 +120,6 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
                       <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     ) : 'Confirmar y Pagar'}
                   </button>
-                  <p className="text-center text-xs text-gray-400 mt-4 px-8">
-                    Serás redirigido de forma segura a Mercado Pago para completar tu pago.
-                  </p>
                 </div>
               </form>
             </div>
@@ -125,7 +130,16 @@ export default function CheckoutModal({ isOpen, onClose, onConfirm, isLoading }:
   );
 }
 
-function Input({ label, placeholder, required, type = "text", value, onChange }: any) {
+interface InputProps {
+  label: string;
+  placeholder: string;
+  required?: boolean;
+  type?: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function Input({ label, placeholder, required, type = "text", value, onChange }: InputProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-xs font-medium text-gray-400 uppercase tracking-widest ml-1">{label}</label>
@@ -141,7 +155,7 @@ function Input({ label, placeholder, required, type = "text", value, onChange }:
   );
 }
 
-function Badge({ Icon, label }: any) {
+function Badge({ Icon, label }: { Icon: any, label: string }) {
   return (
     <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-4 py-2 rounded-full whitespace-nowrap">
       <Icon size={14} className="text-gray-500" />
