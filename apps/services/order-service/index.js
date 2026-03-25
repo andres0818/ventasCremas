@@ -1,96 +1,84 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PATCH'],
+  allowedHeaders: ['Content-Type']
 }));
 
-// Endpoint de salud (para pruebas de red)
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Order Service está vivo' });
+// Configuración de PostgreSQL usando URL de conexión (Secreto de GitHub)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // Requerido para la mayoría de DBs en la nube como Render/Supabase
 });
 
-// Conexión a Base de Datos (MongoDB)
-// Puedes usar MongoDB Atlas o una instancia local
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/skinclear';
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ Conectado a MongoDB (Order Service)'))
-  .catch(err => console.error('❌ Error conexión DB:', err));
-
-// Modelo de Orden
-const OrderSchema = new mongoose.Schema({
-  customerName: String,
-  email: String,
-  phone: String,
-  address: String,
-  city: String,
-  items: Array,
-  total: Number,
-  status: { type: String, default: 'pending' }, // pending, approved, rejected, shipped
-  externalReference: String, // ID de Mercado Pago
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Order = mongoose.model('Order', OrderSchema);
-
-// Endpoint para crear orden inicial
-app.post('/api/orders', async (req, res) => {
+// Inicialización de la Tabla (Se ejecuta al arrancar)
+const initDB = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      customer_name VARCHAR(255) NOT NULL,
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      address TEXT,
+      city VARCHAR(100),
+      total DECIMAL(12,2),
+      status VARCHAR(50) DEFAULT 'pending',
+      external_reference VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
   try {
-    const { customerName, email, phone, address, city, total } = req.body;
-    
-    const newOrder = new Order({
-      customerName,
-      email,
-      phone,
-      address,
-      city,
-      total,
-      items: [{ title: 'Crema SkinClear', quantity: 1, price: total }]
-    });
+    await pool.query(query);
+    console.log('✅ Tabla "orders" verificada/creada en PostgreSQL');
+  } catch (err) {
+    console.error('❌ Error al inicializar DB:', err.message);
+  }
+};
+initDB();
 
-    const savedOrder = await newOrder.save();
-    console.log('📦 Nueva orden registrada:', savedOrder._id);
-    
-    res.status(201).json(savedOrder);
-  } catch (error) {
-    console.error('❌ Error al crear orden:', error);
-    res.status(500).json({ error: 'Error interno al procesar la orden' });
+// Endpoint: Crear Orden
+app.post('/api/orders', async (req, res) => {
+  const { customerName, email, phone, address, city, total } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO orders (customer_name, email, phone, address, city, total) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [customerName, email, phone, address, city, total]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Endpoint para obtener todas las órdenes (Para el Dashboard Admin)
+// Endpoint: Listar Órdenes
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 }); // Las más recientes primero
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener órdenes' });
+    const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Endpoint para actualizar estado de pago (Webhooks)
+// Endpoint: Actualizar Estado (Webhook/Admin)
 app.patch('/api/orders/:id', async (req, res) => {
+  const { status, externalReference } = req.body;
   try {
-    const { status, externalReference } = req.body;
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id, 
-      { status, externalReference },
-      { new: true }
+    const result = await pool.query(
+      'UPDATE orders SET status = $1, external_reference = $2 WHERE id = $3 RETURNING *',
+      [status, externalReference || null, req.params.id]
     );
-    res.json(updatedOrder);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar orden' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`✅ Order Service corriendo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Order Service (Postgres) en puerto ${PORT}`));

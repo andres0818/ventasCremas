@@ -6,7 +6,14 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
+
+// URL del Microservicio de Órdenes (Variable de entorno en GitHub)
+const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://localhost:3002';
 
 // Token de Mercado Pago
 const accessToken = process.env.MP_ACCESS_TOKEN;
