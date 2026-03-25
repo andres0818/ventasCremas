@@ -4,8 +4,10 @@ const nextConfig = {
   images: {
     unoptimized: true, // GitHub Pages no soporta optimización de imágenes nativa de Next.js
   },
-  // Si tu repo se llama /ventasCremas, descomenta la siguiente línea:
-  // basePath: '/ventasCremas', 
+  // Nombre de tu repositorio en GitHub
+  basePath: '/ventasCremas', 
+  // Asegura que los assets (JS/CSS) también usen el prefijo
+  assetPrefix: '/ventasCremas/', 
 };
 
 export default nextConfig;
