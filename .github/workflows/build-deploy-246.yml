@@ -1,0 +1,41 @@
+name: Deploy Node JS
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  PUBLISH_URL: ${{ secrets.LIN_CLOUD_URL_246 }}
+  PUBLISH_KEY: ${{ secrets.LIN_CLOUD_KEY_246 }}
+  ZIP_NAME: app.zip
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------
+      # Checkout
+      # --------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --------------------
+      # Zip
+      # --------------------
+      - name: Zip folder
+        run: |
+          zip -r ${ZIP_NAME} .
+
+      # --------------------
+      # Deploy
+      # --------------------
+      - name: Upload ZIP a LIN Cloud IIS Push
+        run: |
+          curl -X POST \
+            "$PUBLISH_URL/api/Publish?createRelease=true" \
+            -H "accept: text/plain" \
+            -H "Content-Type: multipart/form-data" \
+            -H "Key: $PUBLISH_KEY" \
+            -F "file=@${ZIP_NAME}"
