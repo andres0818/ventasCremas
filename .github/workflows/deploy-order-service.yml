@@ -24,6 +24,8 @@ jobs:
           cd apps/services/order-service
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
           echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env
+          echo "ORDER_SERVICE_URL=${{ secrets.ORDER_SERVICE_URL }}" >> .env
+          echo "PAYMENT_SERVICE_URL=${{ secrets.PAYMENT_SERVICE_URL }}" >> .env
           echo "NODE_ENV=production" >> .env
           echo "PORT=3002" >> .env
 
