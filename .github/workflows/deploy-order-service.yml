@@ -19,9 +19,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create .env file from Secrets
+        run: |
+          cd apps/services/order-service
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+          echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env
+          echo "NODE_ENV=production" >> .env
+          echo "PORT=3002" >> .env
+
       - name: Zip project folder
         run: |
-          cd apps/services/order-service && zip -r ../../../${{ env.ZIP_NAME }} . -x "node_modules/*" ".env" "test-db.js"
+          cd apps/services/order-service && zip -r ../../../${{ env.ZIP_NAME }} . -x "node_modules/*" "test-db.js"
 
       - name: Verify ZIP existence
         run: |
